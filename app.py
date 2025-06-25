@@ -5,7 +5,7 @@ import uvicorn
 
 app = FastAPI()
 
-model = joblib.load('clean_model.pkl')
+model = joblib.load('garbage_classifier.pkl')
 
 class InputData(BaseModel):
     features: list
