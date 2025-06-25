@@ -3,6 +3,11 @@ from pydantic import BaseModel
 import numpy as np
 import joblib
 import torch
+import pathlib
+
+class PosixPathFix(pathlib.PosixPath):
+    pass
+pathlib.WindowsPath = PosixPathFix
 
 app = FastAPI()
 
@@ -23,7 +28,7 @@ except Exception as e:
         raise RuntimeError(f"Failed to load model with both joblib and torch: {e2}")
 
 class GarbageRequest(BaseModel):
-    features: list  # Example: [0.1, 0.5, 3.2]
+    features: list  
 
 @app.get("/")
 def read_root():
@@ -38,10 +43,7 @@ def predict(request: GarbageRequest):
             tensor_input = torch.tensor(features, dtype=torch.float32)
             with torch.no_grad():
                 outputs = model(tensor_input)
-                if hasattr(outputs, "numpy"):
-                    prediction = outputs.numpy().tolist()
-                else:
-                    prediction = outputs.tolist()
+                prediction = outputs.numpy().tolist() if hasattr(outputs, "numpy") else outputs.tolist()
         else:
             prediction = model.predict(features).tolist()
 
@@ -49,3 +51,4 @@ def predict(request: GarbageRequest):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Prediction failed: {str(e)}")
+
