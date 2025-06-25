@@ -1,24 +1,30 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
-import uvicorn
+import numpy as np
 
 app = FastAPI()
 
-model = joblib.load('garbage_classifier.pkl')  
+try:
+    model = joblib.load("garbage_classifier.pkl")
+except Exception as e:
+    print(f"Failed to load model: {e}")
+    raise e
 
-class InputData(BaseModel):
-    features: list
+class GarbageRequest(BaseModel):
+    features: list  # Example: [0.1, 0.5, 3.2]
 
 @app.get("/")
 def read_root():
-    return {"message": "API is running"}
+    return {"message": "Garbage Classification API is up and running"}
 
-@app.post("/predict")
-def predict(data: InputData):
-    result = model.predict([data.features])
-    return {"prediction": result.tolist()}
+@app.post("/predict/")
+def predict(request: GarbageRequest):
+    try:
+        features = np.array(request.features).reshape(1, -1)
+        prediction = model.predict(features)
+        return {"prediction": prediction.tolist()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Prediction failed: {str(e)}")
 
-if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=10000)
 
