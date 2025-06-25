@@ -1,18 +1,24 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI
+from pydantic import BaseModel
 import joblib
+import uvicorn
 
-app = Flask(__name__)
-model = joblib.load('garbage_classifier.pkl')
+app = FastAPI()
 
-@app.route('/')
-def index():
-    return open('EAI6020_FINAL.html').read()
+model = joblib.load('clean_model.pkl')
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = request.json
-    result = model.predict([data['features']])
-    return jsonify({'prediction': result.tolist()})
+class InputData(BaseModel):
+    features: list
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+@app.get("/")
+def read_root():
+    with open('EAI6020_FINAL.html', 'r', encoding='utf-8') as f:
+        return f.read()
+
+@app.post("/predict")
+def predict(data: InputData):
+    result = model.predict([data.features])
+    return {"prediction": result.tolist()}
+
+if __name__ == "__main__":
+    uvicorn.run("app:app", host="0.0.0.0", port=10000)
