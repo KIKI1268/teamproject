@@ -1,27 +1,30 @@
+
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 from fastai.learner import load_learner
 from fastai.vision.all import PILImage
 from io import BytesIO
-from PIL import Image 
+from PIL import Image
+import pathlib  
 
 class PosixPathFix(pathlib.PosixPath):
     pass
 pathlib.WindowsPath = PosixPathFix
 
 app = FastAPI()
+
 model = load_learner('garbage_classifier.pkl')
 
 @app.get("/")
 async def root():
-    return {"message": "Garbage Classification API is live. Use /predict to send POST image files."}
+    return {"message": "Garbage Classification API is running. Use /predict to upload images."}
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
-        img_bytes = await file.read()
-        pil_img = Image.open(BytesIO(img_bytes)).convert("RGB")  
-        img = PILImage.create(pil_img)
+        contents = await file.read()
+        image = Image.open(BytesIO(contents)).convert("RGB")
+        img = PILImage.create(image)
 
         pred, _, probs = model.predict(img)
 
