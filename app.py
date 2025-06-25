@@ -5,15 +5,14 @@ import uvicorn
 
 app = FastAPI()
 
-model = joblib.load('garbage_classifier.pkl')
+model = joblib.load('garbage_classifier.pkl')  
 
 class InputData(BaseModel):
     features: list
 
 @app.get("/")
 def read_root():
-    with open('EAI6020_FINAL.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return {"message": "API is running"}
 
 @app.post("/predict")
 def predict(data: InputData):
@@ -22,3 +21,4 @@ def predict(data: InputData):
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=10000)
+
