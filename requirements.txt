@@ -7,3 +7,5 @@ numpy==1.24.4
 torch==2.0.1
 torchvision==0.15.2
 fastai==2.7.12
+python-multipart
+pillow
