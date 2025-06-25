@@ -5,6 +5,10 @@ from fastai.vision.all import PILImage
 from io import BytesIO
 from PIL import Image 
 
+class PosixPathFix(pathlib.PosixPath):
+    pass
+pathlib.WindowsPath = PosixPathFix
+
 app = FastAPI()
 model = load_learner('garbage_classifier.pkl')
 
